@@ -6,6 +6,7 @@ import axios, { axiosPrivate } from '../../api/axios';
 import useAuth from '../../hooks/useAuth';
 import CreateTrip from './CreateTrip';
 import TripInfo from './TripInfo';
+import { getDistanceFromLatLonInKm } from '../../utils/distance';
 
 const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
     const [trips, setTrips] = useState([]);
@@ -26,12 +27,7 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
     useEffect(() => {
         const fetchRoutes = async () => {
             try {
-                const response = await axios.get('/api/routes', {
-                    params: {
-                        origin: route.origin,
-                        destination: route.destination,
-                    }
-                });
+                const response = await axios.get('/api/routes');
                 const routes = response.data;
                 setTrips(routes);
             }
@@ -133,13 +129,23 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
     };
 
     const filteredTrips = trips.filter((trip) => {
-        const origin = route.origin.toLowerCase();
-        const destination = route.destination.toLowerCase();
+        const originDistance = getDistanceFromLatLonInKm(
+            route.origin.coords[1], 
+            route.origin.coords[0],
+            trip.origin_coords[1],
+            trip.origin_coords[0]
+        );
+        const destinationDistance = getDistanceFromLatLonInKm(
+            route.destination.coords[1],
+            route.destination.coords[0],
+            trip.destination_coords[1],
+            trip.destination_coords[0]
+        );
+
         return (
-            trip.driver !== auth?.username &&
             trip.passengers.length < trip.seats_available &&
-            (trip.origin.toLowerCase().includes(origin) ||
-                trip.destination.toLowerCase().includes(destination))
+            originDistance <= 2 &&
+            destinationDistance <= 2
         );
     });
 
@@ -151,12 +157,21 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
                 <p className='text-xs truncate'>{trip.origin}</p>
                 <p className='text-xs truncate'>{trip.destination}</p>
             </div>
-            <button
-                className='text-sm mx-auto py-1 px-4 rounded-3xl bg-green-500 hover:scale-95'
-                onClick={() => handleOpenDisplayJoin(trip)}
-            >
-                Join
-            </button>
+            {trip.driver === auth?.username ? (
+                <button
+                    className='text-sm mx-auto py-1 px-4 rounded-3xl bg-gray-500 cursor-not-allowed'
+                    disabled
+                >
+                    Your Trip
+                </button>
+            ) : (
+                <button
+                    className='text-sm mx-auto py-1 px-4 rounded-3xl bg-green-500 hover:scale-95'
+                    onClick={() => handleOpenDisplayJoin(trip)}
+                >
+                    Join
+                </button>
+            )}
         </div>
     ));
 

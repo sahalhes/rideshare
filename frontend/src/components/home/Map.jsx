@@ -86,9 +86,22 @@ const Map = ({ displayRides, hideRides }) => {
                 });
             };
 
-            const origin = directionsRef.current.container.querySelector('#mapbox-directions-origin-input .mapboxgl-ctrl-geocoder input').value;
-            const destination = directionsRef.current.container.querySelector('#mapbox-directions-destination-input .mapboxgl-ctrl-geocoder input').value;
+            const originName = directionsRef.current.container.querySelector('#mapbox-directions-origin-input .mapboxgl-ctrl-geocoder input').value;
+            const destinationName = directionsRef.current.container.querySelector('#mapbox-directions-destination-input .mapboxgl-ctrl-geocoder input').value;
             
+            const originFeature = directionsRef.current.getOrigin();
+            const destinationFeature = directionsRef.current.getDestination();
+            
+            const origin = {
+                name: originName,
+                coords: originFeature.geometry.coordinates
+            };
+
+            const destination = {
+                name: destinationName,
+                coords: destinationFeature.geometry.coordinates
+            };
+
             addButtonClickListener();
             displayRides({ origin, destination });
         });

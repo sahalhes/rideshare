@@ -36,11 +36,13 @@ const createTrip = async (req, res) => {
         driver, 
         origin, 
         destination, 
+        origin_coords,
+        destination_coords,
         departure_date, 
         seats_available, 
     } = req.body;
 
-    if (!driver || !origin || !destination || !departure_date || !seats_available) {
+    if (!driver || !origin || !destination || !origin_coords || !destination_coords || !departure_date || !seats_available) {
         return res.status(400).json({message: "Missing dirver, origin, destination, departure_date, or seats_available"});
     }
 
@@ -70,6 +72,8 @@ const createTrip = async (req, res) => {
             driver: driver,
             origin: origin,
             destination: destination,
+            origin_coords: origin_coords,
+            destination_coords: destination_coords,
             departure_date: departure_date,
             seats_available: seats_available,
             passengers: [],

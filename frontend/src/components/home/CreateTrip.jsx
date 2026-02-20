@@ -62,7 +62,10 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
             const departure_date = departureDate.split('T')[0];
             const response = await axiosPrivate.post('/api/trips', {
                 driver: driver,
-                ...route,
+                origin: route.origin.name,
+                destination: route.destination.name,
+                origin_coords: route.origin.coords,
+                destination_coords: route.destination.coords,
                 departure_date: departure_date,
                 seats_available: availableSeats
             });
@@ -125,7 +128,7 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
                                 type='text'
                                 id='origin'
                                 name='origin'
-                                value={route.origin}
+                                value={route.origin.name}
                                 required
                                 disabled
                             />
@@ -136,7 +139,7 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
                                 type='text'
                                 id='destination'
                                 name='destination'
-                                value={route.destination}
+                                value={route.destination.name}
                                 required
                                 disabled
                             />

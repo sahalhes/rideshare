@@ -14,6 +14,14 @@ const tripSchema = new Schema({
         type: String,
         required: true
     },
+    origin_coords: {
+        type: [Number],
+        required: true
+    },
+    destination_coords: {
+        type: [Number],
+        required: true
+    },
     departure_date: {
         type: String,
         required: true
