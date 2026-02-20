@@ -1,0 +1,28 @@
+.mapbox-directions-origin .mapbox-form-label {
+    background-color: #ff4081;
+}
+
+.mapbox-form-label {
+    background-color: #00bcd4;
+}
+
+.mapboxgl-ctrl-geocoder {
+    background-color: #333333ea;
+}
+
+.mapboxgl-ctrl-geocoder input[type='text'] {
+    color: white;
+}
+
+.mapboxgl-ctrl-geocoder input[type='text']::placeholder {
+    color: white;
+    opacity: 50%;
+}
+
+.directions-reverse {
+    display: none;
+}
+
+.mapbox-directions-origin input[type='text'] {
+    box-shadow: 0 2px 0 0 #000;
+}

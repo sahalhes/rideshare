@@ -1,0 +1,49 @@
+services:
+  backend-dev:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend/controllers/:/app/backend/controllers/
+      - ./backend/public/:/app/backend/public/
+      - ./backend/routes/:/app/backend/routes/
+      - ./backend/server.js:/app/backend/server.js
+    ports:
+      - "${API_PORT}:3000"
+    env_file:
+      - ./backend/.env
+
+  frontend-dev:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend/src/:/app/frontend/src/
+      - ./frontend/public/:/app/frontend/public/
+      - ./frontend/tailwind.config.js:/app/frontend/tailwind.config.js
+    ports:
+      - "${WEB_PORT}:5173"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend-dev
+    
+  backend-prod:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "${API_PORT}:3000"
+    env_file:
+      - ./backend/.env
+  
+  frontend-prod:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "${WEB_PORT}:80"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend-prod
