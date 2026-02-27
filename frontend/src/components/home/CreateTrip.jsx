@@ -66,6 +66,7 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
                 destination: route.destination.name,
                 origin_coords: route.origin.coords,
                 destination_coords: route.destination.coords,
+                route_geometry: route.routeGeometry || [],
                 departure_date: departure_date,
                 seats_available: availableSeats
             });

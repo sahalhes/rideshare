@@ -38,6 +38,7 @@ const createTrip = async (req, res) => {
         destination, 
         origin_coords,
         destination_coords,
+        route_geometry,
         departure_date, 
         seats_available, 
     } = req.body;
@@ -74,6 +75,7 @@ const createTrip = async (req, res) => {
             destination: destination,
             origin_coords: origin_coords,
             destination_coords: destination_coords,
+            route_geometry: route_geometry || [],
             departure_date: departure_date,
             seats_available: seats_available,
             passengers: [],

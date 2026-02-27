@@ -71,7 +71,7 @@ const Map = ({ displayRides, hideRides }) => {
         });
         mapRef.current.addControl(directionsRef.current, 'top');
 
-        directionsRef.current.on('route', () => {
+        directionsRef.current.on('route', (e) => {
             const handleButtonClick = (e) => {
                 e.stopPropagation();
                 hideRides();
@@ -102,8 +102,13 @@ const Map = ({ displayRides, hideRides }) => {
                 coords: destinationFeature.geometry.coordinates
             };
 
+            // Extract route geometry (polyline coordinates) from the Mapbox Directions response
+            const routeGeometry = e.route && e.route[0] && e.route[0].geometry && e.route[0].geometry.coordinates
+                ? e.route[0].geometry.coordinates
+                : [];
+
             addButtonClickListener();
-            displayRides({ origin, destination });
+            displayRides({ origin, destination, routeGeometry });
         });
 
         return () => {

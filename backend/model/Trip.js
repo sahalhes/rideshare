@@ -22,6 +22,10 @@ const tripSchema = new Schema({
         type: [Number],
         required: true
     },
+    route_geometry: {
+        type: [[Number]],
+        default: []
+    },
     departure_date: {
         type: String,
         required: true

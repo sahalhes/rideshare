@@ -6,7 +6,6 @@ import axios, { axiosPrivate } from '../../api/axios';
 import useAuth from '../../hooks/useAuth';
 import CreateTrip from './CreateTrip';
 import TripInfo from './TripInfo';
-import { getDistanceFromLatLonInKm } from '../../utils/distance';
 
 const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
     const [trips, setTrips] = useState([]);
@@ -25,18 +24,22 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
     const location = useLocation();
 
     useEffect(() => {
-        const fetchRoutes = async () => {
+        const fetchMatchedTrips = async () => {
             try {
-                const response = await axios.get('/api/routes');
-                const routes = response.data;
-                setTrips(routes);
+                const response = await axios.post('/api/routes/match', {
+                    origin_coords: route.origin.coords,
+                    destination_coords: route.destination.coords
+                });
+                setTrips(response.data);
             }
             catch (error) {
                 setTrips([]);
             }
         };
 
-        fetchRoutes()
+        if (route?.origin?.coords && route?.destination?.coords) {
+            fetchMatchedTrips();
+        }
     }, [route]);
 
     useEffect(() => {
@@ -128,28 +131,7 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
         }
     };
 
-    const filteredTrips = trips.filter((trip) => {
-        const originDistance = getDistanceFromLatLonInKm(
-            route.origin.coords[1], 
-            route.origin.coords[0],
-            trip.origin_coords[1],
-            trip.origin_coords[0]
-        );
-        const destinationDistance = getDistanceFromLatLonInKm(
-            route.destination.coords[1],
-            route.destination.coords[0],
-            trip.destination_coords[1],
-            trip.destination_coords[0]
-        );
-
-        return (
-            trip.passengers.length < trip.seats_available &&
-            originDistance <= 2 &&
-            destinationDistance <= 2
-        );
-    });
-
-    const tripElements = filteredTrips.map((trip, index) => (
+    const tripElements = trips.map((trip, index) => (
         <div key={index} className={`flex items-center mb-2 ${!smallScreen && 'bg-base p-2 rounded-full'}`}>
             <img src='/default_profile_picture.png' className={`w-16 h-16 object-cover ${smallScreen && 'ml-4'}`} />
             <div className='ml-4 w-1/2 text-white'>
