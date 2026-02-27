@@ -1,13 +1,23 @@
-import { useEffect, useState } from 'react';
-import Map from './components/home/Map';
-import Sidebar from './components/home/Sidebar';
-import Rides from './components/home/Rides';
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import Map from "./components/home/Map";
+import Sidebar from "./components/home/Sidebar";
+import Rides from "./components/home/Rides";
+import CreateTrip from "./components/home/CreateTrip";
+import useAuth from "./hooks/useAuth";
 
 const Home = () => {
     const [route, setRoute] = useState({});
     const [routeSearched, setRouteSearched] = useState(false);
     const [isRidesVisible, setIsRidesVisible] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [createTripOpen, setCreateTripOpen] = useState(false);
+    const [directionsContainer, setDirectionsContainer] = useState(null);
+
+    const { auth } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const closeAll = () => {
@@ -17,11 +27,8 @@ const Home = () => {
             }
         };
 
-        window.addEventListener('resize', closeAll);
-
-        return () => {
-            window.removeEventListener('resize', closeAll);
-        };
+        window.addEventListener("resize", closeAll);
+        return () => window.removeEventListener("resize", closeAll);
     }, []);
 
     const displayRides = (newRoute) => {
@@ -33,54 +40,98 @@ const Home = () => {
 
     const hideRides = () => {
         setIsRidesVisible(false);
-        setTimeout(() => {
-            setRouteSearched(false);
-        }, 700);
+        setTimeout(() => setRouteSearched(false), 700);
     };
 
     const openRides = () => {
-        if (window.innerWidth < 768 && sidebarOpen) {
-            closeSidebar();
-        }
+        if (window.innerWidth < 768 && sidebarOpen) closeSidebar();
         setIsRidesVisible(true);
     };
 
-    const closeRides = () => {
-        setIsRidesVisible(false);
-    };
+    const closeRides = () => setIsRidesVisible(false);
 
     const openSidebar = () => {
-        if (window.innerWidth < 768 && isRidesVisible) {
-            closeRides();
-        }
+        if (window.innerWidth < 768 && isRidesVisible) closeRides();
         setSidebarOpen(true);
     };
 
-    const closeSidebar = () => {
-        setSidebarOpen(false);
+    const closeSidebar = () => setSidebarOpen(false);
+
+    const handleOpenCreateTrip = () => {
+        if (!auth?.username) {
+            navigate("/login", { state: { from: location } });
+            return;
+        }
+        setCreateTripOpen(true);
+        closeRides();
+    };
+
+    const handleCloseCreateTrip = () => {
+        setCreateTripOpen(false);
+        openRides();
     };
 
     return (
-        <section className='relative h-[calc(100vh-48px)]'>
-            <Map 
-                displayRides={displayRides} 
+        <section className="relative h-[calc(100vh-48px)]">
+            <Map
+                displayRides={displayRides}
                 hideRides={hideRides}
+                onDirectionsReady={setDirectionsContainer}
             />
-            <Sidebar 
+            <Sidebar
                 sidebarOpen={sidebarOpen}
                 openSidebar={openSidebar}
                 closeSidebar={closeSidebar}
             />
+
+            {/* Portal the Create Trip button into the directions container so it sits flush below the inputs */}
+            {directionsContainer &&
+                createPortal(
+                    <div
+                        style={{
+                            opacity: routeSearched ? 1 : 0,
+                            transform: routeSearched
+                                ? "translateY(0)"
+                                : "translateY(-6px)",
+                            pointerEvents: routeSearched ? "auto" : "none",
+                            transition:
+                                "opacity 0.3s ease, transform 0.3s ease",
+                            marginTop: 8,
+                        }}
+                    >
+                        <button
+                            onClick={handleOpenCreateTrip}
+                            className="w-full py-3 rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity"
+                            style={{
+                                background: "#161616",
+                                color: "#fff",
+                                border: "1px solid #3a3a3a",
+                                boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+                            }}
+                        >
+                            + Create a Trip
+                        </button>
+                    </div>,
+                    directionsContainer,
+                )}
+
             {routeSearched && (
-                <Rides 
+                <Rides
                     route={route}
                     isRidesVisible={isRidesVisible}
                     openRides={openRides}
                     closeRides={closeRides}
                 />
             )}
+
+            {createTripOpen && routeSearched && (
+                <CreateTrip
+                    route={route}
+                    setCreateTripOpenFalse={handleCloseCreateTrip}
+                />
+            )}
         </section>
-    )
+    );
 };
 
 export default Home;
