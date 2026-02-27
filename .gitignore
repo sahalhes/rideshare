@@ -4,4 +4,4 @@ logs
 
 .vscode/*
 !.vscode/extensions.json
-.github/*
+.github/
