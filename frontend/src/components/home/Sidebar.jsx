@@ -8,6 +8,7 @@ import { faCheck, faX } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import useAuth from "../../hooks/useAuth";
+import useNotification from "../../hooks/useNotification";
 
 const Sidebar = ({
     sidebarOpen,
@@ -33,6 +34,7 @@ const Sidebar = ({
 
     const axiosPrivate = useAxiosPrivate();
     const { auth } = useAuth();
+    const { addNotification } = useNotification();
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -115,6 +117,7 @@ const Sidebar = ({
                         ride.departure_date !== createdRide.departure_date,
                 ),
             );
+            addNotification("Trip deleted successfully.", "success");
             handleCloseCreatedDisplay();
         } catch (error) {
             if (!error?.response) {
@@ -150,6 +153,7 @@ const Sidebar = ({
             );
             setTripInfoErrMsg("");
             setTripInfoErr(false);
+            addNotification(`Accepted ${passenger}'s request.`, "success");
         } catch (error) {
             if (!error?.response) {
                 setTripInfoErrMsg("Server is down. Please try again later.");
@@ -184,6 +188,7 @@ const Sidebar = ({
             );
             setTripInfoErrMsg("");
             setTripInfoErr(false);
+            addNotification(`Rejected ${passenger}'s request.`, "info");
         } catch (error) {
             if (!error?.response) {
                 setTripInfoErrMsg("Server is down. Please try again later.");
@@ -210,6 +215,7 @@ const Sidebar = ({
                         ride.departure_date !== joinedRide.departure_date,
                 ),
             );
+            addNotification("Left the trip.", "info");
             handleCloseJoinedDisplay();
         } catch (error) {
             if (!error?.response) {

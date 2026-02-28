@@ -12,17 +12,17 @@
     .passenger-scroll-container::-webkit-scrollbar {
         height: 8px;
     }
-    
+
     .passenger-scroll-container::-webkit-scrollbar-track {
-        background: #2d2d2d; 
+        background: #2d2d2d;
         border-radius: 4px;
     }
-    
+
     .passenger-scroll-container::-webkit-scrollbar-thumb {
-        background: #555; 
+        background: #555;
         border-radius: 4px;
     }
-    
+
     .passenger-scroll-container {
         scrollbar-width: thin;
         scrollbar-color: #555 #2d2d2d;
@@ -60,31 +60,31 @@
 
     @keyframes slideOutToBottom {
         0% {
-            height: 33%; 
+            height: 33%;
         }
         100% {
-            height: 35px; 
+            height: 35px;
         }
     }
 
     @keyframes slideOutToBottom2 {
         0% {
-            height: 66%; 
+            height: 66%;
         }
         100% {
-            height: 35px; 
+            height: 35px;
         }
     }
 
     @keyframes slideOutToRight {
         0% {
-            width: 100%; 
+            width: 100%;
         }
         100% {
-            width: 8px; 
+            width: 8px;
         }
     }
-    
+
     .slide-in {
         animation: slideInFromBottom 0.7s ease-out forwards;
     }
@@ -107,5 +107,20 @@
 
     .slide-out3 {
         animation: slideOutToRight 0.7s ease-in forwards;
+    }
+
+    @keyframes toastSlideIn {
+        0% {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .animate-slide-in {
+        animation: toastSlideIn 0.3s ease-out forwards;
     }
 }

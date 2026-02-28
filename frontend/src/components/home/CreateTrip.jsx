@@ -7,6 +7,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import useAuth from "../../hooks/useAuth";
+import useNotification from "../../hooks/useNotification";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
@@ -27,6 +28,7 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
 
     const axiosPrivate = useAxiosPrivate();
     const { auth } = useAuth();
+    const { addNotification } = useNotification();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -86,6 +88,7 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
                 max_detour_minutes: maxDetour,
             });
             setSuccess(true);
+            addNotification("Trip created successfully!", "success");
         } catch (error) {
             if (!error?.response)
                 setErrMsg("Network error. No server response.");

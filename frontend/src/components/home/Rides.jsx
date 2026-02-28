@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios, { axiosPrivate } from "../../api/axios";
 import useAuth from "../../hooks/useAuth";
+import useNotification from "../../hooks/useNotification";
 import TripInfo from "./TripInfo";
 
 const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
@@ -15,6 +16,7 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
     const [seatsRequested, setSeatsRequested] = useState(1);
 
     const { auth } = useAuth();
+    const { addNotification } = useNotification();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -101,6 +103,7 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
                         : trip,
                 ),
             );
+            addNotification(`Request sent to ${openTrip.driver}.`, "success");
         } catch (error) {
             if (!error?.response) {
                 setTripInfoErrMsg("Server is down. Please try again later.");
