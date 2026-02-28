@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import Map from "./components/home/Map";
@@ -14,6 +14,7 @@ const Home = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [createTripOpen, setCreateTripOpen] = useState(false);
     const [directionsContainer, setDirectionsContainer] = useState(null);
+    const mapRef = useRef();
 
     const { auth } = useAuth();
     const navigate = useNavigate();
@@ -71,9 +72,18 @@ const Home = () => {
         openRides();
     };
 
+    const showTripOnMap = useCallback((trip, riderInfo) => {
+        mapRef.current?.showTripOnMap(trip, riderInfo);
+    }, []);
+
+    const clearTripFromMap = useCallback(() => {
+        mapRef.current?.clearTripFromMap();
+    }, []);
+
     return (
         <section className="relative h-[calc(100vh-48px)]">
             <Map
+                ref={mapRef}
                 displayRides={displayRides}
                 hideRides={hideRides}
                 onDirectionsReady={setDirectionsContainer}
@@ -82,6 +92,8 @@ const Home = () => {
                 sidebarOpen={sidebarOpen}
                 openSidebar={openSidebar}
                 closeSidebar={closeSidebar}
+                showTripOnMap={showTripOnMap}
+                clearTripFromMap={clearTripFromMap}
             />
 
             {/* Portal the Create Trip button into the directions container so it sits flush below the inputs */}

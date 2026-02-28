@@ -18,6 +18,9 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
     const [availableSeats, setAvailableSeats] = useState(1);
     const [validAvailableSeats, setValidAvailableSeats] = useState(true);
 
+    const [maxDetour, setMaxDetour] = useState(15);
+    const [validMaxDetour, setValidMaxDetour] = useState(true);
+
     const [errMsg, setErrMsg] = useState("");
     const [err, setErr] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -36,6 +39,11 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
         setErr(false);
         setValidAvailableSeats(availableSeats >= 1);
     }, [availableSeats]);
+
+    useEffect(() => {
+        setErr(false);
+        setValidMaxDetour(maxDetour >= 1);
+    }, [maxDetour]);
 
     const validateDepartureDate = () => {
         const today = new Date().toISOString().split("T")[0];
@@ -58,6 +66,11 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
             setErr(true);
             return;
         }
+        if (maxDetour < 1) {
+            setErrMsg("Invalid max detour");
+            setErr(true);
+            return;
+        }
 
         try {
             const driver = auth?.username;
@@ -70,6 +83,7 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
                 destination_coords: route.destination.coords,
                 departure_date,
                 seats_available: availableSeats,
+                max_detour_minutes: maxDetour,
             });
             setSuccess(true);
         } catch (error) {
@@ -343,26 +357,87 @@ const CreateTrip = ({ route, setCreateTripOpenFalse }) => {
                             )}
                         </div>
 
+                        {/* Max detour stepper */}
+                        <div className="flex flex-col gap-1">
+                            <label
+                                className="text-xs font-medium uppercase tracking-widest"
+                                style={{ color: "#9e9e9e" }}
+                            >
+                                Max Detour (minutes)
+                            </label>
+                            <div
+                                className="flex items-center rounded-xl overflow-hidden"
+                                style={{
+                                    background: "#1e1e1e",
+                                    border: `1px solid ${validMaxDetour ? "#2a2a2a" : "#7f1d1d"}`,
+                                }}
+                            >
+                                <button
+                                    type="button"
+                                    className="px-5 py-3 text-xl font-light hover:bg-white/10 transition-colors select-none"
+                                    onClick={() =>
+                                        setMaxDetour((s) =>
+                                            Math.max(1, Number(s) - 5),
+                                        )
+                                    }
+                                >
+                                    −
+                                </button>
+                                <span className="flex-1 text-center text-sm font-semibold">
+                                    {maxDetour} min
+                                </span>
+                                <button
+                                    type="button"
+                                    className="px-5 py-3 text-xl font-light hover:bg-white/10 transition-colors select-none"
+                                    onClick={() =>
+                                        setMaxDetour((s) => Number(s) + 5)
+                                    }
+                                >
+                                    +
+                                </button>
+                            </div>
+                            {!validMaxDetour && (
+                                <p
+                                    className="text-xs mt-0.5"
+                                    style={{ color: "#f87171" }}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faInfoCircle}
+                                        className="mr-1"
+                                    />
+                                    Must be at least 1 minute
+                                </p>
+                            )}
+                        </div>
+
                         {/* Submit */}
                         <button
                             type="submit"
                             className="w-full py-3 rounded-xl font-semibold text-sm mt-1 transition-opacity"
                             style={{
                                 background:
-                                    validDepartureDate && validAvailableSeats
+                                    validDepartureDate &&
+                                    validAvailableSeats &&
+                                    validMaxDetour
                                         ? "#22c55e"
                                         : "#1a3a1a",
                                 color:
-                                    validDepartureDate && validAvailableSeats
+                                    validDepartureDate &&
+                                    validAvailableSeats &&
+                                    validMaxDetour
                                         ? "#000"
                                         : "#4a6a4a",
                                 cursor:
-                                    validDepartureDate && validAvailableSeats
+                                    validDepartureDate &&
+                                    validAvailableSeats &&
+                                    validMaxDetour
                                         ? "pointer"
                                         : "not-allowed",
                             }}
                             disabled={
-                                !validDepartureDate || !validAvailableSeats
+                                !validDepartureDate ||
+                                !validAvailableSeats ||
+                                !validMaxDetour
                             }
                         >
                             Create Trip

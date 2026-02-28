@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios, { axiosPrivate } from "../../api/axios";
 import useAuth from "../../hooks/useAuth";
 import TripInfo from "./TripInfo";
-import { getDistanceFromLatLonInKm } from "../../utils/distance";
 
 const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
     const [trips, setTrips] = useState([]);
@@ -13,6 +12,7 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
 
     const [tripInfoErrMsg, setTripInfoErrMsg] = useState("");
     const [tripInfoErr, setTripInfoErr] = useState(false);
+    const [seatsRequested, setSeatsRequested] = useState(1);
 
     const { auth } = useAuth();
     const navigate = useNavigate();
@@ -20,10 +20,17 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
 
     useEffect(() => {
         const fetchRoutes = async () => {
+            if (!route?.origin?.coords || !route?.destination?.coords) return;
             try {
-                const response = await axios.get("/api/routes");
-                const routes = response.data;
-                setTrips(routes);
+                const response = await axios.get("/api/routes", {
+                    params: {
+                        origin_lng: route.origin.coords[0],
+                        origin_lat: route.origin.coords[1],
+                        dest_lng: route.destination.coords[0],
+                        dest_lat: route.destination.coords[1],
+                    },
+                });
+                setTrips(response.data);
             } catch (error) {
                 setTrips([]);
             }
@@ -52,6 +59,7 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
         }
 
         setOpenTrip(trip);
+        setSeatsRequested(1);
         setJoinTripOpen(true);
         closeRides();
     };
@@ -77,6 +85,11 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
                     driver: openTrip.driver,
                     departure_date: openTrip.departure_date,
                     requester: auth?.username,
+                    origin: route.origin.name,
+                    destination: route.destination.name,
+                    origin_coords: route.origin.coords,
+                    destination_coords: route.destination.coords,
+                    seats_requested: seatsRequested,
                 },
             );
             setOpenTrip(response.data);
@@ -102,28 +115,7 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
         }
     };
 
-    const filteredTrips = trips.filter((trip) => {
-        const originDistance = getDistanceFromLatLonInKm(
-            route.origin.coords[1],
-            route.origin.coords[0],
-            trip.origin_coords[1],
-            trip.origin_coords[0],
-        );
-        const destinationDistance = getDistanceFromLatLonInKm(
-            route.destination.coords[1],
-            route.destination.coords[0],
-            trip.destination_coords[1],
-            trip.destination_coords[0],
-        );
-
-        return (
-            trip.passengers.length < trip.seats_available &&
-            originDistance <= 2 &&
-            destinationDistance <= 2
-        );
-    });
-
-    const tripElements = filteredTrips.map((trip, index) => (
+    const tripElements = trips.map((trip, index) => (
         <div
             key={index}
             className={`flex items-center mb-2 ${!smallScreen && "bg-base p-2 rounded-full"}`}
@@ -145,6 +137,20 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
                     disabled
                 >
                     Your Trip
+                </button>
+            ) : trip.passengers?.some((p) => p.username === auth?.username) ? (
+                <button
+                    className="text-sm mx-auto py-1 px-4 rounded-3xl bg-gray-500 cursor-not-allowed"
+                    disabled
+                >
+                    Joined
+                </button>
+            ) : trip.requests?.some((r) => r.username === auth?.username) ? (
+                <button
+                    className="text-sm mx-auto py-1 px-4 rounded-3xl bg-yellow-500 cursor-not-allowed"
+                    disabled
+                >
+                    Pending
                 </button>
             ) : (
                 <button
@@ -185,21 +191,68 @@ const Rides = ({ route, isRidesVisible, openRides, closeRides }) => {
                     tripInfoErr={tripInfoErr}
                     tripInfoErrMsg={tripInfoErrMsg}
                 >
-                    <button
-                        className={`text-sm py-1 px-4 rounded-3xl bg-green-500 ${
-                            openTrip.requests.includes(auth?.username) ||
-                            openTrip.passengers.includes(auth?.username)
-                                ? "cursor-not-allowed opacity-50"
-                                : "hover:scale-95"
-                        }`}
-                        disabled={
-                            openTrip.requests.includes(auth?.username) ||
-                            openTrip.passengers.includes(auth?.username)
-                        }
-                        onClick={handleTripRequest}
-                    >
-                        Request to Join
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm text-gray-400">
+                                Seats:
+                            </label>
+                            <div className="flex items-center">
+                                <button
+                                    type="button"
+                                    className="w-7 h-7 rounded-l-md bg-gray-600 text-white hover:bg-gray-500 text-lg leading-none"
+                                    onClick={() =>
+                                        setSeatsRequested((prev) =>
+                                            Math.max(1, prev - 1),
+                                        )
+                                    }
+                                >
+                                    −
+                                </button>
+                                <span className="w-8 h-7 flex items-center justify-center bg-gray-700 text-white text-sm">
+                                    {seatsRequested}
+                                </span>
+                                <button
+                                    type="button"
+                                    className="w-7 h-7 rounded-r-md bg-gray-600 text-white hover:bg-gray-500 text-lg leading-none"
+                                    onClick={() =>
+                                        setSeatsRequested((prev) =>
+                                            Math.min(
+                                                openTrip.seats_available || 1,
+                                                prev + 1,
+                                            ),
+                                        )
+                                    }
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                        <button
+                            className={`text-sm py-1 px-4 rounded-3xl bg-green-500 ${
+                                openTrip.requests?.some(
+                                    (r) => r.username === auth?.username,
+                                ) ||
+                                openTrip.passengers?.some(
+                                    (p) => p.username === auth?.username,
+                                ) ||
+                                seatsRequested > (openTrip.seats_available || 0)
+                                    ? "cursor-not-allowed opacity-50"
+                                    : "hover:scale-95"
+                            }`}
+                            disabled={
+                                openTrip.requests?.some(
+                                    (r) => r.username === auth?.username,
+                                ) ||
+                                openTrip.passengers?.some(
+                                    (p) => p.username === auth?.username,
+                                ) ||
+                                seatsRequested > (openTrip.seats_available || 0)
+                            }
+                            onClick={handleTripRequest}
+                        >
+                            Request to Join
+                        </button>
+                    </div>
                 </TripInfo>
             )}
         </>
