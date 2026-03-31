@@ -1,8 +1,8 @@
 # Rideshare Web App 🚗
 ![Demo](frontend/public/rideshare.webp)
 
-**(View report.pdf for more detailed working demo)
-**
+(View report.pdf for more detailed working demo)
+
 A rideshare web application built with the MERN stack (MongoDB, Express.js, React.js, Node.js) that allows users to connect with friends and share rides to common destinations. The app supports trip creation, joining trips, and viewing user profiles. It also provides a profile management feature for user accounts.
 
 ## Features
